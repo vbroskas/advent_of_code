@@ -24,7 +24,7 @@ defmodule D6P1 do
         [
           "toggle",
           x_start,
-          y_start,
+          y_start,iex
           x_end,
           y_end
         ],
