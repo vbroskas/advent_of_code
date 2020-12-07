@@ -1,38 +1,36 @@
 defmodule D6P1 do
-  # TODO change this from 5 to 999 in final solution
-  @initial_off for x <- 0..999, y <- 0..999, do: [x, y]
-  @initial_on []
   @rejects ["turn", "through", "\n"]
 
+  # TODO add in ETS table for store!
+
   def get_instructions() do
-    {num_lights_on, _current_on, _current_off} =
+    {num_lights_on, _current_on} =
       "inputs/D6.txt"
       |> Path.expand(__DIR__)
       |> File.stream!()
       |> Stream.map(&String.replace(&1, @rejects, ""))
       |> Stream.map(&String.split(&1, [" ", ","], trim: true))
-      |> Enum.reduce({0, @initial_on, @initial_off}, fn x, {_acc, current_on, current_off} ->
-        calc_lights_on(x, current_on, current_off)
+      |> Enum.reduce({0, []}, fn x, {_acc, current_on} ->
+        calc_lights_on(x, current_on)
       end)
 
     num_lights_on
   end
 
-  def calc_lights_on(instructions, current_on \\ @initial_on, current_off \\ @initial_off)
+  def calc_lights_on(instructions, current_on)
 
   def calc_lights_on(
         [
           "toggle",
           x_start,
-          y_start,iex
+          y_start,
           x_end,
           y_end
         ],
-        current_on,
-        current_off
+        current_on
       ) do
     temp_list = create_temp_list(x_start, y_start, x_end, y_end)
-    find_toggles(temp_list, current_on, current_off)
+    find_toggles(temp_list, current_on)
   end
 
   def calc_lights_on(
@@ -43,19 +41,12 @@ defmodule D6P1 do
           x_end,
           y_end
         ],
-        current_on,
-        current_off
+        current_on
       ) do
-    # create temp list to compare with current on and off lists
     temp_list = create_temp_list(x_start, y_start, x_end, y_end)
-    # add new items(if any) to current list of on lights
     current_on = add_to_list(temp_list, current_on)
-    # remove items from current list of off lights
-    current_off = remove_from_list(temp_list, current_off)
-    # count num elements in on list
     num_on = Enum.count(current_on)
-
-    {num_on, current_on, current_off}
+    {num_on, current_on}
   end
 
   def calc_lights_on(
@@ -66,14 +57,12 @@ defmodule D6P1 do
           x_end,
           y_end
         ],
-        current_on,
-        current_off
+        current_on
       ) do
     temp_list = create_temp_list(x_start, y_start, x_end, y_end)
     current_on = remove_from_list(temp_list, current_on)
-    current_off = add_to_list(temp_list, current_off)
     num_on = Enum.count(current_on)
-    {num_on, current_on, current_off}
+    {num_on, current_on}
   end
 
   def create_temp_list(x_start, y_start, x_end, y_end) do
@@ -90,24 +79,13 @@ defmodule D6P1 do
     (temp_list ++ current_list) |> Enum.uniq()
   end
 
-  def find_toggles(temp_list, current_on, current_off) do
-    # ON-----------
+  def find_toggles(temp_list, current_on) do
     matching_on = Enum.filter(current_on, fn el -> Enum.member?(temp_list, el) end)
-    # remove matching_on from current_on, and add matching_on to current_off
-
-    # OFF---------
-    matching_off = Enum.filter(current_off, fn el -> Enum.member?(temp_list, el) end)
-    # remove matching_off from current_off, and add matching_off to current_on
-    current_off = (current_off -- matching_off) ++ matching_on
-    current_on = (current_on -- matching_on) ++ matching_off
+    current_on = (current_on -- matching_on) ++ (temp_list -- matching_on)
     num_on = Enum.count(current_on)
-    {num_on, current_on, current_off}
+    {num_on, current_on}
   end
 end
-
-# ["toggle", "461,550", "564,900"]
-# ["off", "269,809", "876,847"]
-# ["on", "952,417", "954,845"]
 
 # toggle 461,550 through 564,900
 # turn off 370,39 through 425,839
