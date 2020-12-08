@@ -1,4 +1,4 @@
-defmodule D6P1 do
+defmodule D6P2 do
   @rejects ["turn", "through", "\n"]
 
   @doc """
@@ -34,8 +34,8 @@ defmodule D6P1 do
       ]) do
     create_temp_list(x_start, y_start, x_end, y_end)
     |> Enum.each(fn [x, y] ->
-      # {Pos, Incr, Threshold, SetValue}, default to 0 so increment will go to 1
-      :ets.update_counter(:lights_table, [x, y], {2, 1, 1, 0}, {[x, y], 0})
+      # update_counter(Tab, Key, Incr, Default)
+      :ets.update_counter(:lights_table, [x, y], 2, {[x, y], 0})
     end)
   end
 
@@ -47,7 +47,8 @@ defmodule D6P1 do
         y_end
       ]) do
     create_temp_list(x_start, y_start, x_end, y_end)
-    |> Enum.each(fn [x, y] -> :ets.insert(:lights_table, {[x, y], 1}) end)
+    # update_counter(Tab, Key, Incr, Default)
+    |> Enum.each(fn [x, y] -> :ets.update_counter(:lights_table, [x, y], 1, {[x, y], 0}) end)
   end
 
   def calc_lights_on([
@@ -58,7 +59,10 @@ defmodule D6P1 do
         y_end
       ]) do
     create_temp_list(x_start, y_start, x_end, y_end)
-    |> Enum.each(fn [x, y] -> :ets.insert(:lights_table, {[x, y], 0}) end)
+    |> Enum.each(fn [x, y] ->
+      # update_counter(Tab, Key, [{Pos, Incr, Threshold, SetValue}], Default)
+      :ets.update_counter(:lights_table, [x, y], {2, -1, 0, 0}, {[x, y], 0})
+    end)
   end
 
   @doc """
