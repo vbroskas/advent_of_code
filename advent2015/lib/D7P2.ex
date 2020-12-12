@@ -1,7 +1,8 @@
-defmodule D7P1 do
+defmodule D7P2 do
   @moduledoc """
   clean each input row to turn string INTs to INT, and commands to atoms
   iterate over each row, if any wire not found in store, shift that row to end of the list
+  Part 2 sets the value for "b" as the value for "a" in D7P1
   """
   use Bitwise
 
@@ -38,9 +39,9 @@ defmodule D7P1 do
       |> Stream.map(&Enum.map(&1, fn x -> check_int(x) end))
       |> Stream.map(&Enum.map(&1, fn x -> replace_commands(x) end))
       |> Enum.to_list()
-      |> match_string(%{})
+      |> match_string(%{"b" => 956})
 
-    # map["a"]
+    map["a"]
   end
 
   def replace_commands(string) do
@@ -99,9 +100,17 @@ defmodule D7P1 do
   end
 
   defp update_store(w, w_val, row, master, store) do
-    store = Map.put(store, w, w_val)
-    master = List.delete(master, row)
-    match_string(master, store)
+    # **only change on part 2 is needed to check if a input wire ("b") is already in the store so we don't override it the first time we find it in the master list
+    case Map.has_key?(store, w) do
+      true ->
+        master = List.delete(master, row)
+        match_string(master, store)
+
+      false ->
+        store = Map.put(store, w, w_val)
+        master = List.delete(master, row)
+        match_string(master, store)
+    end
   end
 
   # if any of the wires in a row aren't found in the store,
